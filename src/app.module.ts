@@ -5,6 +5,8 @@ import {SequelizeModule} from "@nestjs/sequelize";
 import { ProductsModule } from './products/products.module';
 import {ProductModel} from "./products/product.model";
 import { SortProductsModule } from './sort-products/sort-products.module';
+import { CategoryModule } from './category/category.module';
+import {CategoryModel} from "./category/category.model";
 
 
 
@@ -21,12 +23,14 @@ import { SortProductsModule } from './sort-products/sort-products.module';
       password: process.env.POSTGRES_PASSWORD,
       database: process.env.POSTGRES_DB,
       models: [
-          ProductModel
+          ProductModel,
+          CategoryModel,
       ],
       autoLoadModels: true,
     }),
     ProductsModule,
     SortProductsModule,
+    CategoryModule,
   ],
   controllers: [],
   providers: [],

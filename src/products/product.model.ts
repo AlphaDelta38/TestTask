@@ -1,4 +1,5 @@
-import {Column, DataType, Model, Table} from "sequelize-typescript";
+import {BelongsTo, Column, DataType, Model, Table} from "sequelize-typescript";
+import {CategoryModel} from "../category/category.model";
 
 
 interface ProductInerface{
@@ -37,5 +38,8 @@ export class ProductModel extends Model<ProductModel,ProductInerface>{
     @Column({type: DataType.INTEGER, allowNull: false})
     categoryId: number
 
+
+    @BelongsTo(()=>CategoryModel, {foreignKey: 'categoryId'})
+    category: CategoryModel
 
 }

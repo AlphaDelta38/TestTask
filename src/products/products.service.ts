@@ -58,7 +58,7 @@ export class ProductsService {
 
              let Page = DefaultPage * DefaultLimit - DefaultLimit
 
-            const products = await  this.productsRepository.findAll({limit: DefaultLimit, offset: Page ,  attributes: ['id', 'price','title', "mainPhoto", "createdAt" ]})
+            const products:ProductModel[] = await  this.productsRepository.findAll({limit: DefaultLimit, offset: Page ,  attributes: ['id', 'price','title', "mainPhoto", "createdAt" ]})
             if(!products){
                 throw new HttpException({message: 'товары не найдены'}, HttpStatus.NOT_FOUND)
             }
