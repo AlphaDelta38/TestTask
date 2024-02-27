@@ -37,7 +37,7 @@ export class CategoryService {
     }
 
     async  getOneCategory(id:number){
-            return await  this.categoryRepository.findByPk(id)
+        return await  this.categoryRepository.findByPk(id)
     }
 
     async delete(id: number){

@@ -8,6 +8,8 @@ import { SortProductsModule } from './sort-products/sort-products.module';
 import { CategoryModule } from './category/category.module';
 import {CategoryModel} from "./category/category.model";
 import { CurrencySwitchModule } from './currency-switch/currency-switch.module';
+import { UserModule } from './user/user.module';
+import { AuthModule } from './auth/auth.module';
 
 
 
@@ -33,6 +35,8 @@ import { CurrencySwitchModule } from './currency-switch/currency-switch.module';
     SortProductsModule,
     CategoryModule,
     CurrencySwitchModule,
+    UserModule,
+    AuthModule,
   ],
   controllers: [],
   providers: [],
