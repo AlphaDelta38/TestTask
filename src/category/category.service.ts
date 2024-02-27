@@ -3,13 +3,15 @@ import {InjectModel} from "@nestjs/sequelize";
 import {CategoryModel} from "./category.model";
 import {CategoryDto} from "./dto/category.dto";
 import {GetAllDto} from "./dto/getAll.dto";
-import {skip} from "rxjs";
 import {ProductModel} from "../products/product.model";
+import axios from "axios";
+import {CurrencySwitchService} from "../currency-switch/currency-switch.service";
+import {SortProductsService} from "../sort-products/sort-products.service";
 
 @Injectable()
 export class CategoryService {
 
-    constructor(@InjectModel(CategoryModel) private categoryRepository: typeof  CategoryModel, @InjectModel(ProductModel) private productRepository: typeof ProductModel ) {
+    constructor(@InjectModel(CategoryModel) private categoryRepository: typeof  CategoryModel, @InjectModel(ProductModel) private productRepository: typeof ProductModel,private  currencyService: CurrencySwitchService , private sortingService: SortProductsService) {
     }
 
     async createCategory(dto: CategoryDto){
@@ -68,12 +70,42 @@ export class CategoryService {
             throw new HttpException({message: 'Категория не найдена'}, HttpStatus.BAD_REQUEST)
         }
 
-        const foundProducts = await this.productRepository.findAll({where: {categoryId: foundCategory.id}, attributes: ['id', 'price','title', "mainPhoto", "createdAt" ], limit: DefaultLimit, offset: Page})
+        let foundProducts = await this.productRepository.findAll({where: {categoryId: foundCategory.id}, attributes: ['id', 'price','title', "mainPhoto", "createdAt" ], limit: DefaultLimit, offset: Page})
 
+        if(dto.sortBy && dto.sortFor){
+            let sortedProducts: ProductModel[]
+
+            if(dto.sortBy === 'price'){
+                if(dto.sortFor === 'up'){
+                    sortedProducts = await this.sortingService.sortPriceUp(foundProducts)
+                }else if(dto.sortFor === 'down'){
+                    sortedProducts = await this.sortingService.sortPriceDown(foundProducts)
+                }
+            }else if(dto.sortBy === 'date'){
+                if(dto.sortFor === 'up'){
+                    sortedProducts = await this.sortingService.sortDateUp(foundProducts)
+                }else if(dto.sortFor === 'down'){
+                    sortedProducts = await this.sortingService.sortDateDown(foundProducts)
+                }
+            }
+
+            if(dto.currency){
+                sortedProducts = await this.currencyService.switchCurrrencyMassive(dto.currency , sortedProducts)
+            }
+
+
+            return [foundCategory,{products: sortedProducts}]
+
+        }
+
+
+
+
+        if(dto.currency){
+            foundProducts = await this.currencyService.switchCurrrencyMassive(dto.currency, foundProducts)
+        }
 
         return [foundCategory,{products: foundProducts}]
-
-
 
 
     }

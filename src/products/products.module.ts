@@ -4,6 +4,7 @@ import { ProductsService } from './products.service';
 import {SequelizeModule} from "@nestjs/sequelize";
 import {ProductModel} from "./product.model";
 import {SortProductsModule} from "../sort-products/sort-products.module";
+import {CurrencySwitchModule} from "../currency-switch/currency-switch.module";
 
 @Module({
   imports: [
@@ -11,6 +12,7 @@ import {SortProductsModule} from "../sort-products/sort-products.module";
           ProductModel,
       ]),
       SortProductsModule,
+      CurrencySwitchModule,
   ],
   controllers: [ProductsController],
   providers: [ProductsService]

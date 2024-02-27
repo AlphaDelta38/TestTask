@@ -7,4 +7,5 @@ export class QueryParametrsDto{
     readonly page: number
     readonly sortBy: string
     readonly sortFor: string
+    currency?: string
 }

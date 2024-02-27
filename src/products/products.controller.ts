@@ -26,11 +26,11 @@ export class ProductsController {
 
 
     @Get('/:id')
-    getOne(@Param('id') id: number){
+    getOne(@Param('id') id: number, @Query('currency') currency: string){
         if(!id){
             throw new HttpException({message: 'укажите айди'}, HttpStatus.BAD_REQUEST)
         }
-        return this.productsSerivce.getOneProduct(id)
+        return this.productsSerivce.getOneProduct(id, currency)
     }
 
 

@@ -7,11 +7,13 @@ import * as fs from "fs";
 import { v4 as uuidv4 } from 'uuid';
 import {QueryParametrsDto} from "./dto/queryParametrs.dto";
 import {SortProductsService} from "../sort-products/sort-products.service";
+import axios from "axios";
+import {CurrencySwitchService} from "../currency-switch/currency-switch.service";
 
 @Injectable()
 export class ProductsService {
 
-    constructor(@InjectModel(ProductModel) private productsRepository: typeof ProductModel, private sortingService: SortProductsService) {
+    constructor(@InjectModel(ProductModel) private productsRepository: typeof ProductModel, private sortingService: SortProductsService, private  currencyService: CurrencySwitchService) {
     }
 
     async createProduct(dto: ProductsDto): Promise<Number> {
@@ -44,7 +46,7 @@ export class ProductsService {
 
 
 
-    async getAllProducts(dto: QueryParametrsDto){
+    async getAllProducts(dto: QueryParametrsDto,){
             let DefaultLimit = 10
             let DefaultPage  = 1
 
@@ -59,42 +61,69 @@ export class ProductsService {
              let Page = DefaultPage * DefaultLimit - DefaultLimit
 
             const products:ProductModel[] = await  this.productsRepository.findAll({limit: DefaultLimit, offset: Page ,  attributes: ['id', 'price','title', "mainPhoto", "createdAt" ]})
+
+
+
+
             if(!products){
                 throw new HttpException({message: 'товары не найдены'}, HttpStatus.NOT_FOUND)
             }
 
 
 
-            let sortedProducts: ProductModel[]
+            if(dto.sortBy && dto.sortFor){
+                let sortedProducts: ProductModel[]
 
-            if(dto.sortBy === 'price'){
-                if(dto.sortFor === 'up'){
-                    sortedProducts = await this.sortingService.sortPriceUp(products)
-                }else if(dto.sortFor === 'down'){
-                    sortedProducts = await this.sortingService.sortPriceDown(products)
+                if(dto.sortBy === 'price'){
+                    if(dto.sortFor === 'up'){
+                        sortedProducts = await this.sortingService.sortPriceUp(products)
+                    }else if(dto.sortFor === 'down'){
+                        sortedProducts = await this.sortingService.sortPriceDown(products)
+                    }
+                }else if(dto.sortBy === 'date'){
+                    if(dto.sortFor === 'up'){
+                        sortedProducts = await this.sortingService.sortDateUp(products)
+                    }else if(dto.sortFor === 'down'){
+                        sortedProducts = await this.sortingService.sortDateDown(products)
+                    }
                 }
-            }else if(dto.sortBy === 'date'){
-                if(dto.sortFor === 'up'){
-                    sortedProducts = await this.sortingService.sortDateUp(products)
-                }else if(dto.sortFor === 'down'){
-                    sortedProducts = await this.sortingService.sortDateDown(products)
+
+                if(dto.currency){
+                    sortedProducts = await this.currencyService.switchCurrrencyMassive(dto.currency , sortedProducts)
                 }
+
+
+
+                return sortedProducts
             }
 
 
-            return sortedProducts
+            let sortedProductByCurrency
+            if(dto.currency){
+                sortedProductByCurrency = await  this.currencyService.switchCurrrencyMassive(dto.currency , products)
+                return sortedProductByCurrency
+            }
+
+
+
+            return products
     }
 
 
-    async getOneProduct(id:number){
+    async getOneProduct(id:number, currency:string){
             const foundOne = await this.productsRepository.findByPk(id)
             const filePath = path.resolve(process.cwd(), 'src', 'products', 'description', `${foundOne.description}`)
             const description = fs.readFileSync(filePath, 'utf8',)
+
 
             if(!foundOne){
                 throw new HttpException({message: 'Данный товар не найден'}, HttpStatus.BAD_REQUEST)
             }
             foundOne.description = description
+            if(currency){
+            return await this.currencyService.switchCurrrencyOne(currency, foundOne)
+            }
+
             return foundOne
     }
 
